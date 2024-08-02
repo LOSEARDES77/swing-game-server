@@ -25,6 +25,10 @@ impl Player {
     pub fn is_ready(&self) -> bool {
         self.ready
     }
+
+    pub fn get_color(&self) -> (u8, u8, u8) {
+        self.color
+    }
 }
 
 fn gen_random_pos() -> (f64, f64) {

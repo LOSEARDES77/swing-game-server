@@ -83,16 +83,16 @@ impl Packet {
             "PING" => PacketTypes::Ping,
             _ => PacketTypes::UnknowType,
         };
-        let data = String::from_utf8_lossy(&raw_data[16..]).to_string();
+        let data_str = String::from_utf8_lossy(&raw_data[16..]).to_string();
 
         Self {
             p_type,
-            data,
+            data: data_str,
             raw_data: raw_data.clone(),
             is_valid: raw_data.len() <= 512,
         }
     }
-    pub fn new(p_type: PacketTypes, data: String) -> Self {
+    pub fn new(p_type: PacketTypes, data: &str) -> Self {
         let mut type_string = format!("{}", p_type);
         if type_string.len() < 16 {
             type_string.push_str(&" ".repeat(16 - type_string.len()));
@@ -102,7 +102,7 @@ impl Packet {
 
         Self {
             p_type,
-            data,
+            data: data.to_string(),
             raw_data: raw_data.clone(),
             is_valid: raw_data.len() <= 512,
         }
