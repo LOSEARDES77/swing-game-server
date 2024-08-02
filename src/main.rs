@@ -38,7 +38,7 @@ fn main() {
         pool.execute(move || {
             let mut game_data = game_data.lock().expect("Failed to lock game data");
 
-            let res = handler.handle_packet(packet, &mut game_data);
+            let res = handler.on_packet(packet, &mut game_data);
             if let Err(e) = res {
                 eprintln!("Error: {}", e);
             }
@@ -53,9 +53,7 @@ mod tests {
     #[test]
     fn enum_constants_string() {
         assert_eq!(format!("{}", PacketTypes::Join), "JOIN");
-        assert_eq!(format!("{}", PacketTypes::SetColor), "SET_COLOR");
         assert_eq!(format!("{}", PacketTypes::ColorError), "COLOR_ERROR");
-        assert_eq!(format!("{}", PacketTypes::ReadyUp), "READY_UP");
         assert_eq!(format!("{}", PacketTypes::LevelData), "LEVEL_DATA");
         assert_eq!(format!("{}", PacketTypes::Ready), "READY");
         assert_eq!(format!("{}", PacketTypes::StartGame), "START_GAME");

@@ -2,24 +2,23 @@ use std::fmt::{Display, Formatter, Result};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum PacketTypes {
-    Join,        // To join the game
-    SetColor,    // Change the color of the player
-    ColorError,  // If there is already a player with that color
-    ReadyUp,     // When the client is ready to start the match
-    LevelData,   // The details of the level (walls, enemy quantity, ...)
-    Ready,       // Marks the player as ready
-    StartGame,   // Start the game
-    Move,        // Move the player
-    MatchEnded,  // When the match has concluded
-    SetHealth,   // Change the health of any player
-    EnemyChange, // A change on an enemy (direction or axis)
-    EnemyTp,     // An enemy teleported
-    Exit,        // Finish
-    UnknowType,  // Unknown type
-    Invalid,     // Bad packet
-    Ok,          // Everything is fine
-    Error,       // Something went wrong
-    Ping,        // Ping the server
+    Join,         // To join the game
+    ColorError,   // If there is already a player with that color
+    LevelData,    // The details of the level (walls, enemy quantity, ...)
+    Ready,        // Marks the player as ready
+    StartGame,    // Start the game
+    Move,         // Move the player
+    MatchEnded,   // When the match has concluded
+    SetHealth,    // Change the health of any player
+    EnemyChange,  // A change on an enemy (direction or axis)
+    EnemyTp,      // An enemy teleported
+    Exit,         // Finish
+    UnknowType,   // Unknown type
+    Invalid,      // Bad packet
+    Ok,           // Everything is fine
+    Error,        // Something went wrong
+    Ping,         // Ping the server
+    PlayerJoined, // A player joined the game
 }
 
 impl Display for PacketTypes {
@@ -29,9 +28,7 @@ impl Display for PacketTypes {
             "{}",
             match self {
                 PacketTypes::Join => "JOIN",
-                PacketTypes::SetColor => "SET_COLOR",
                 PacketTypes::ColorError => "COLOR_ERROR",
-                PacketTypes::ReadyUp => "READY_UP",
                 PacketTypes::LevelData => "LEVEL_DATA",
                 PacketTypes::Ready => "READY",
                 PacketTypes::StartGame => "START_GAME",
@@ -46,6 +43,7 @@ impl Display for PacketTypes {
                 PacketTypes::Ok => "OK",
                 PacketTypes::Error => "ERROR",
                 PacketTypes::Ping => "PING",
+                PacketTypes::PlayerJoined => "PLAYER_JOINED",
             }
         )
     }
@@ -64,9 +62,7 @@ impl Packet {
         type_string = type_string.trim().to_string();
         let p_type = match type_string.as_str() {
             "JOIN" => PacketTypes::Join,
-            "SET_COLOR" => PacketTypes::SetColor,
             "COLOR_ERROR" => PacketTypes::ColorError,
-            "READY_UP" => PacketTypes::ReadyUp,
             "LEVEL_DATA" => PacketTypes::LevelData,
             "READY" => PacketTypes::Ready,
             "START_GAME" => PacketTypes::StartGame,
@@ -81,6 +77,7 @@ impl Packet {
             "OK" => PacketTypes::Ok,
             "ERROR" => PacketTypes::Error,
             "PING" => PacketTypes::Ping,
+            "PLAYER_JOINED" => PacketTypes::PlayerJoined,
             _ => PacketTypes::UnknowType,
         };
         let data_str = String::from_utf8_lossy(&raw_data[16..]).to_string();

@@ -11,6 +11,7 @@ pub struct GameData {
     enemies: Vec<Enemy>,
     walls: Vec<Wall>,
     player_capacity: u8,
+    math_status: bool, // Started or not
 }
 
 impl GameData {
@@ -20,6 +21,7 @@ impl GameData {
             enemies: Vec::new(),
             walls: Vec::new(),
             player_capacity: num_cpus::get() as u8,
+            math_status: false,
         }
     }
 
@@ -49,5 +51,13 @@ impl GameData {
 
     pub fn get_player(&self, socket_address: &SocketAddr) -> Option<&Player> {
         self.players.get(socket_address)
+    }
+
+    pub fn has_match_started(&self) -> bool {
+        self.math_status
+    }
+
+    pub fn start_match(&mut self) {
+        self.math_status = true;
     }
 }

@@ -35,75 +35,77 @@ impl ClientHandler {
             .expect("Failed to send data");
     }
 
-    pub fn handle_packet(&self, packet: Packet, game_data: &mut GameData) -> Result<(), &str> {
-        match packet.get_type() {
-            PacketTypes::Join => {
-                let packet_data = packet.get_data();
-                let coolor = packet_data.split(';').collect::<Vec<&str>>();
-                if coolor.len() != 3 {
-                    self.send(Packet::new(PacketTypes::ColorError, "Invalid color"));
-                    return Err("Invalid color");
-                }
-                let r = coolor[0].parse::<u8>().map_err(|_| "Invalid color")?;
-                let g = coolor[1].parse::<u8>().map_err(|_| "Invalid color")?;
-                let b = coolor[2].parse::<u8>().map_err(|_| "Invalid color")?;
-                let player = Player::new((r, g, b));
-                for player in game_data.get_players() {
-                    if player.get_color() == (r, g, b) {
-                        // TODO: Also filter similar colors
-                        self.send(Packet::new(PacketTypes::ColorError, "Color alredy picked"));
-                        return Err("Color already in use");
+    pub fn on_packet(&self, packet: Packet, game_data: &mut GameData) -> Result<(), &str> {
+        if !game_data.has_match_started() {
+            match packet.get_type() {
+                PacketTypes::Join => {
+                    let packet_data = packet.get_data();
+                    let coolor = packet_data.split(';').collect::<Vec<&str>>();
+                    if coolor.len() != 3 {
+                        self.send(Packet::new(PacketTypes::ColorError, "Invalid color"));
+                        return Err("Invalid color");
                     }
-                }
-                game_data.add_player(self.address, player);
-
-                self.send(Packet::new(PacketTypes::Ok, ""));
-            }
-            PacketTypes::SetColor => {}
-            PacketTypes::ColorError => {}
-            PacketTypes::ReadyUp => {}
-            PacketTypes::LevelData => {}
-            PacketTypes::Ready => {
-                if let Some(player) = game_data.get_player(&self.address) {
-                    let mut player = *player;
-                    player.set_ready();
-                    if player.is_ready() {
-                        self.send(Packet::new(PacketTypes::Ok, "Ready"));
-                    } else {
-                        self.send(Packet::new(PacketTypes::Ok, "Not Ready"));
+                    let r = coolor[0].parse::<u8>().map_err(|_| "Invalid color")?;
+                    let g = coolor[1].parse::<u8>().map_err(|_| "Invalid color")?;
+                    let b = coolor[2].parse::<u8>().map_err(|_| "Invalid color")?;
+                    let player = Player::new((r, g, b));
+                    for player in game_data.get_players() {
+                        if player.get_color() == (r, g, b) {
+                            // TODO: Also filter similar colors
+                            self.send(Packet::new(PacketTypes::ColorError, "Color alredy picked"));
+                            return Err("Color already in use");
+                        }
                     }
                     game_data.add_player(self.address, player);
-                } else {
-                    self.send(Packet::new(PacketTypes::Error, "Player not found"));
+
+                    self.send(Packet::new(PacketTypes::Ok, ""));
+                }
+                PacketTypes::ColorError => {} // Not supposed to receive this packet as the server
+                PacketTypes::LevelData => {}  // Not supposed to receive this packet as the server
+                PacketTypes::Ready => {
+                    if let Some(player) = game_data.get_player(&self.address) {
+                        let mut player = *player;
+                        player.set_ready();
+                        if player.is_ready() {
+                            self.send(Packet::new(PacketTypes::Ok, "Ready"));
+                        } else {
+                            self.send(Packet::new(PacketTypes::Ok, "Not Ready"));
+                        }
+                        game_data.add_player(self.address, player);
+                    } else {
+                        self.send(Packet::new(PacketTypes::Error, "Player not found"));
+                    }
+                }
+                PacketTypes::StartGame => {} // Not supposed to receive this packet as the server
+                PacketTypes::Move => {}
+                PacketTypes::MatchEnded => {} // Not supposed to receive this packet as the server
+                PacketTypes::SetHealth => {}  // Not supposed to receive this packet as the server
+                PacketTypes::EnemyChange => {} // Not supposed to receive this packet as the server
+                PacketTypes::EnemyTp => {}    // Not supposed to receive this packet as the server
+                PacketTypes::Exit => {}       // Not supposed to receive this packet as the server
+                PacketTypes::UnknowType => {}
+                PacketTypes::Invalid => {}
+                PacketTypes::Ok => {}
+                PacketTypes::Error => {}
+                PacketTypes::Ping => {
+                    let time = packet.get_data().parse::<u128>().unwrap();
+                    let current_time = std::time::SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .unwrap()
+                        .as_millis();
+
+                    let ping = current_time - time;
+                    self.send(Packet::new(
+                        PacketTypes::Ping,
+                        format!("{} {}", ping, current_time).as_str(),
+                    ));
+                }
+                PacketTypes::PlayerJoined => {
+                    // Not supposed to receive this packet on the server
                 }
             }
-            PacketTypes::StartGame => {}
-            PacketTypes::Move => {}
-            PacketTypes::MatchEnded => {}
-            PacketTypes::SetHealth => {}
-            PacketTypes::EnemyChange => {}
-            PacketTypes::EnemyTp => {}
-            PacketTypes::Exit => {}
-            PacketTypes::UnknowType => {}
-            PacketTypes::Invalid => {}
-            PacketTypes::Ok => {}
-            PacketTypes::Error => {}
-            PacketTypes::Ping => {
-                let time = packet.get_data().parse::<u128>().unwrap();
-                let current_time = std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .unwrap()
-                    .as_millis();
-
-                println!("Java time: {}", time);
-                println!("Current time: {}", current_time);
-                let ping = current_time - time;
-                println!("Ping: {}", ping);
-                self.send(Packet::new(
-                    PacketTypes::Ping,
-                    format!("{} {}", ping, current_time).as_str(),
-                ));
-            }
+        } else {
+            self.send(Packet::new(PacketTypes::Error, "Match not started"));
         }
 
         Ok(())
