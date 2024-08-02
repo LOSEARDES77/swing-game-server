@@ -13,8 +13,16 @@ use std::net::UdpSocket;
 use std::sync::{Arc, Mutex};
 
 fn main() {
-    let server_ip = "127.0.0.1";
+    let server_local_ip = "127.0.0.1";
+    let server_open_net_ip = "0.0.0.0";
     let server_port = 5784;
+
+    let server_ip = if cfg!(debug_assertions) {
+        server_local_ip
+    } else {
+        server_open_net_ip
+    };
+
     let socket = UdpSocket::bind(format!("{}:{}", server_ip, server_port))
         .expect("Failed to bind to socket");
 
