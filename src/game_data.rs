@@ -48,6 +48,6 @@ impl GameData {
     }
 
     pub fn get_player(&self, socket_address: &SocketAddr) -> Option<&Player> {
-        self.players.get(&socket_address)
+        self.players.get(socket_address)
     }
 }

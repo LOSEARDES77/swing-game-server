@@ -67,7 +67,7 @@ impl ClientHandler {
             PacketTypes::LevelData => {}
             PacketTypes::Ready => {
                 if let Some(player) = game_data.get_player(&self.address) {
-                    let mut player = player.clone();
+                    let mut player = *player;
                     player.set_ready();
                     if player.is_ready() {
                         self.send(Packet::new(PacketTypes::Ok, "Ready".to_string()));
