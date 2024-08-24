@@ -48,7 +48,7 @@ impl ClientHandler {
                     let r = coolor[0].parse::<u8>().map_err(|_| "Invalid color")?;
                     let g = coolor[1].parse::<u8>().map_err(|_| "Invalid color")?;
                     let b = coolor[2].parse::<u8>().map_err(|_| "Invalid color")?;
-                    let player = Player::new((r, g, b));
+                    let player = Player::new((r, g, b), self.clone());
                     for player in game_data.get_players() {
                         if player.get_color() == (r, g, b) {
                             // TODO: Also filter similar colors
@@ -64,7 +64,7 @@ impl ClientHandler {
                 PacketTypes::LevelData => {}  // Not supposed to receive this packet as the server
                 PacketTypes::Ready => {
                     if let Some(player) = game_data.get_player(&self.address) {
-                        let mut player = *player;
+                        let mut player = player.clone();
                         player.set_ready();
                         if player.is_ready() {
                             self.send(Packet::new(PacketTypes::Ok, "Ready"));
@@ -77,12 +77,12 @@ impl ClientHandler {
                     }
                 }
                 PacketTypes::StartGame => {} // Not supposed to receive this packet as the server
-                PacketTypes::Move => {}
                 PacketTypes::MatchEnded => {} // Not supposed to receive this packet as the server
-                PacketTypes::SetHealth => {}  // Not supposed to receive this packet as the server
+                PacketTypes::SetHealth => {} // Not supposed to receive this packet as the server
                 PacketTypes::EnemyChange => {} // Not supposed to receive this packet as the server
-                PacketTypes::EnemyTp => {}    // Not supposed to receive this packet as the server
-                PacketTypes::Exit => {}       // Not supposed to receive this packet as the server
+                PacketTypes::EnemyTp => {}   // Not supposed to receive this packet as the server
+                PacketTypes::Exit => {}      // Not supposed to receive this packet as the server
+                PacketTypes::Move => {}
                 PacketTypes::UnknowType => {}
                 PacketTypes::Invalid => {}
                 PacketTypes::Ok => {}
@@ -100,12 +100,58 @@ impl ClientHandler {
                         format!("{} {}", ping, current_time).as_str(),
                     ));
                 }
-                PacketTypes::PlayerJoined => {
-                    // Not supposed to receive this packet on the server
-                }
+                PacketTypes::PlayerJoined => {} // Not supposed to receive this packet on the server
             }
         } else {
-            self.send(Packet::new(PacketTypes::Error, "Match not started"));
+            match packet.get_type() {
+                PacketTypes::Join => {
+                    self.send(Packet::new(PacketTypes::Error, "Match already started"));
+                }
+                PacketTypes::ColorError => {} // Not supposed to receive this packet as the server
+                PacketTypes::LevelData => {}  // Not supposed to receive this packet as the server
+                PacketTypes::Ready => {}      // Not supposed to receive this packet as the server
+                PacketTypes::StartGame => {}  // Not supposed to receive this packet as the server
+                PacketTypes::MatchEnded => {} // Not supposed to receive this packet as the server
+                PacketTypes::SetHealth => {}  // Not supposed to receive this packet as the server
+                PacketTypes::EnemyChange => {} // Not supposed to receive this packet as the server
+                PacketTypes::EnemyTp => {}    // Not supposed to receive this packet as the server
+                PacketTypes::Exit => {}       // Not supposed to receive this packet as the server
+                PacketTypes::Move => {
+                    let packet_data = packet.get_data();
+                    let data = packet_data.split(';').collect::<Vec<&str>>();
+                    if data.len() != 2 {
+                        self.send(Packet::new(PacketTypes::Error, "Invalid data"));
+                        return Err("Invalid data");
+                    }
+                    let x = data[0].parse::<f32>().map_err(|_| "Invalid data")?;
+                    let y = data[1].parse::<f32>().map_err(|_| "Invalid data")?;
+                    if let Some(player) = game_data.get_player(&self.address) {
+                        let mut player = player.clone();
+                        player.set_pos((x, y));
+                        game_data.add_player(self.address, player);
+                    } else {
+                        self.send(Packet::new(PacketTypes::Error, "Player not found"));
+                    }
+                }
+                PacketTypes::UnknowType => {}
+                PacketTypes::Invalid => {}
+                PacketTypes::Ok => {}
+                PacketTypes::Error => {}
+                PacketTypes::Ping => {
+                    let time = packet.get_data().parse::<u128>().unwrap();
+                    let current_time = std::time::SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .unwrap()
+                        .as_millis();
+
+                    let ping = current_time - time;
+                    self.send(Packet::new(
+                        PacketTypes::Ping,
+                        format!("{} {}", ping, current_time).as_str(),
+                    ));
+                }
+                _ => {}
+            }
         }
 
         Ok(())
