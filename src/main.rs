@@ -5,6 +5,7 @@ mod handler;
 mod packet;
 mod player;
 mod walls;
+mod coins;
 
 use crate::handler::ClientHandler;
 use crate::packet::PacketTypes;
@@ -15,7 +16,7 @@ use std::sync::{Arc, Mutex};
 fn main() {
     let server_local_ip = "127.0.0.1";
     let server_open_net_ip = "0.0.0.0";
-    let server_port = 5784;
+    let server_port = 5784; //  FIXME Move setting the port to a config file
 
     let server_ip = if cfg!(debug_assertions) {
         server_local_ip

@@ -1,17 +1,23 @@
 use std::collections::HashMap;
 use std::net::SocketAddr;
 
+use rand::Rng;
+
 use crate::enemies::Enemy;
 use crate::player::Player;
 use crate::walls::Wall;
+use crate::coins::Coin;
+
+pub const GAME_FIELD_SIZE: [u16; 2] = [1900, 1060];
 
 #[derive(Debug, Clone)]
 pub struct GameData {
     players: HashMap<SocketAddr, Player>,
     enemies: Vec<Enemy>,
+	coins: Vec<Coin>,
     walls: Vec<Wall>,
     player_capacity: u8,
-    math_status: bool, // Started or not
+    match_status: bool, // Started or not
 }
 
 impl GameData {
@@ -19,9 +25,10 @@ impl GameData {
         Self {
             players: HashMap::new(),
             enemies: Vec::new(),
+			coins: Vec::new(),
             walls: Vec::new(),
             player_capacity: num_cpus::get() as u8,
-            math_status: false,
+            match_status: false,
         }
     }
 
@@ -54,10 +61,19 @@ impl GameData {
     }
 
     pub fn has_match_started(&self) -> bool {
-        self.math_status
+        self.match_status
     }
 
     pub fn start_match(&mut self) {
-        self.math_status = true;
+        self.match_status = true;
     }
+}
+
+pub fn get_random_position(max_x: f64, max_y: f64) -> (f64, f64) {
+    let mut rng = rand::thread_rng();
+
+	let rand_x = rng.gen_range(0.0..=max_x);
+	let rand_y = rng.gen_range(0.0..=max_y);
+
+	(rand_x, rand_y)
 }
