@@ -6,6 +6,7 @@ mod packet;
 mod player;
 mod walls;
 mod coins;
+mod game_field;
 
 use crate::handler::ClientHandler;
 use crate::packet::PacketTypes;
