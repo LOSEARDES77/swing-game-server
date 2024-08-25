@@ -5,6 +5,7 @@ use rand::Rng;
 
 use crate::enemies::Enemy;
 use crate::player::Player;
+use crate::space::Vec2;
 use crate::walls::Wall;
 use crate::coins::Coin;
 
@@ -69,11 +70,11 @@ impl GameData {
     }
 }
 
-pub fn get_random_position(max_x: f64, max_y: f64) -> (f64, f64) {
+pub fn get_random_position(max: Vec2) -> Vec2 {
     let mut rng = rand::thread_rng();
 
-	let rand_x = rng.gen_range(0.0..=max_x);
-	let rand_y = rng.gen_range(0.0..=max_y);
+	let x = rng.gen_range(0.0..=max.x);
+	let y = rng.gen_range(0.0..=max.y);
 
-	(rand_x, rand_y)
+	Vec2::new(x, y)
 }

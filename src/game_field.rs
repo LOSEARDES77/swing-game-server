@@ -26,15 +26,15 @@ impl GameFieldGenerator {
 		}
 	}
 
-	fn generate_coin(&self) -> Coin {
-		let pos = get_random_position(GAME_FIELD_SIZE[0] as f64, GAME_FIELD_SIZE[1] as f64);
+	fn generate_coin(&self) -> Coin {		
+		let pos = get_random_position(GAME_FIELD_SIZE.into());
 
-		Coin::new(pos.0, pos.1)	// FIXME Does not check for collision 
+		Coin::new(pos.x, pos.y)	// FIXME Does not check for collision 
 	}
 
 	fn generate_enemy(&self)  -> Enemy {
-		let pos = get_random_position(GAME_FIELD_SIZE[0] as f64, GAME_FIELD_SIZE[1] as f64);
+		let pos = get_random_position(GAME_FIELD_SIZE.into());
 
-		Enemy::new(pos.0, pos.1) // FIXME Does not check for collision 
+		Enemy::new(pos.x, pos.y) // FIXME Does not check for collision 
 	}
 }
