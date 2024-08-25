@@ -2,8 +2,8 @@ use crate::space::Vec2;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Enemy {
-    pos: Vec2,
-    size: Vec2,
+    pub pos: Vec2,
+    pub size: Vec2,
 }
 
 impl Enemy {

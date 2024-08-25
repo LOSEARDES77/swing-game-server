@@ -3,11 +3,10 @@ use std::net::SocketAddr;
 
 use rand::Rng;
 
-use crate::enemies::Enemy;
 use crate::game_field::{GameField, GameFieldGenerator};
 use crate::player::Player;
 use crate::space::Vec2;
-use crate::walls::Wall;
+
 
 pub const GAME_FIELD_SIZE: [u16; 2] = [1900, 1060];
 

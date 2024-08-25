@@ -2,6 +2,7 @@ use crate::{
     coins::Coin,
     enemies::Enemy,
     game_data::{get_random_position, GAME_FIELD_SIZE},
+    space::{point_inside_rect, Vec2},
     walls::Wall,
 };
 
@@ -36,15 +37,40 @@ impl GameField {
     }
 
     fn generate_coin(&self) -> Coin {
-        let pos = get_random_position(GAME_FIELD_SIZE.into());
+		loop {
+			let pos = get_random_position(GAME_FIELD_SIZE.into());
 
-        Coin::new(pos.x, pos.y) // FIXME Does not check for collision
+			if !self.check_collision(pos) {
+				return Coin::new(pos.x, pos.y);
+			}
+		}
+
     }
 
     fn generate_enemy(&self) -> Enemy {
-        let pos = get_random_position(GAME_FIELD_SIZE.into());
+        loop {
+            let pos = get_random_position(GAME_FIELD_SIZE.into());
 
-        Enemy::new(pos.x, pos.y) // FIXME Does not check for collision
+            if !self.check_collision(pos) {
+                return Enemy::new(pos.x, pos.y);
+            }
+        }
+    }
+
+    fn check_coin_collision(&self, pos: Vec2) -> bool {
+        self.coins
+            .iter()
+            .any(|&coin| point_inside_rect(coin.pos, coin.size, pos))
+    }
+
+    fn check_enemy_collision(&self, pos: Vec2) -> bool {
+        self.enemies
+            .iter()
+            .any(|&enemy| point_inside_rect(enemy.pos, enemy.size, pos))
+    }
+
+    fn check_collision(&self, pos: Vec2) -> bool {
+        self.check_coin_collision(pos) || self.check_enemy_collision(pos)
     }
 }
 
