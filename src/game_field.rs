@@ -36,18 +36,17 @@ impl GameField {
         }
     }
 
-    fn generate_coin(&self) -> Coin {
-		loop {
-			let pos = get_random_position(GAME_FIELD_SIZE.into());
+    fn spawn_coin(&self) -> Coin {
+        loop {
+            let pos = get_random_position(GAME_FIELD_SIZE.into());
 
-			if !self.check_collision(pos) {
-				return Coin::new(pos.x, pos.y);
-			}
-		}
-
+            if !self.check_collision(pos) {
+                return Coin::new(pos.x, pos.y);
+            }
+        }
     }
 
-    fn generate_enemy(&self) -> Enemy {
+    fn spawn_enemy(&self) -> Enemy {
         loop {
             let pos = get_random_position(GAME_FIELD_SIZE.into());
 
@@ -56,6 +55,54 @@ impl GameField {
             }
         }
     }
+
+    fn generate_coins(&mut self, dt: f32) {
+        self.coins_gen_counter += dt;
+
+        if self.coins_gen_counter >= self.settings.coins_gen_rate
+            && self.coins.len() < self.settings.max_coins.into()
+        {
+            self.coins_gen_counter = 0.0;
+
+            let coin = self.spawn_coin();
+            self.coins.push(coin)
+        }
+    }
+
+    fn generate_enemies(&mut self, dt: f32) {
+        self.enemies_gen_counter += dt;
+
+        if self.enemies_gen_counter >= self.settings.enemies_gen_rate
+            && self.enemies.len() < self.settings.max_enemies.into()
+        {
+            self.enemies_gen_counter = 0.0;
+
+            let enemy = self.spawn_enemy();
+            self.enemies.push(enemy)
+        }
+    }
+
+    fn init_coins(&mut self) {
+        loop {
+            let coin = self.spawn_coin();
+            self.coins.push(coin);
+
+            if self.coins.len() >= self.settings.max_coins.into() {
+                break;
+            }
+        }
+    }
+
+	fn init_enemies(&mut self) {
+        loop {
+            let enemy = self.spawn_enemy();
+            self.enemies.push(enemy);
+
+            if self.enemies.len() >= self.settings.max_enemies.into() {
+                break;
+            }
+        }
+	}
 
     fn check_coin_collision(&self, pos: Vec2) -> bool {
         self.coins
