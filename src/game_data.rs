@@ -1,27 +1,30 @@
 use std::collections::HashMap;
 use std::net::SocketAddr;
 
-use crate::enemies::Enemy;
+use rand::Rng;
+
+use crate::game_field::{GameField, GameFieldGenerator};
 use crate::player::Player;
-use crate::walls::Wall;
+use crate::space::Vec2;
+
+
+pub const GAME_FIELD_SIZE: [u16; 2] = [1900, 1060];
 
 #[derive(Debug, Clone)]
 pub struct GameData {
     players: HashMap<SocketAddr, Player>,
-    enemies: Vec<Enemy>,
-    walls: Vec<Wall>,
+	field: GameField,
     player_capacity: u8,
-    math_status: bool, // Started or not
+    match_status: bool, // Started or not
 }
 
 impl GameData {
     pub fn new() -> Self {
         Self {
             players: HashMap::new(),
-            enemies: Vec::new(),
-            walls: Vec::new(),
+			field: GameField::new(GameFieldGenerator::default()),
             player_capacity: num_cpus::get() as u8,
-            math_status: false,
+            match_status: false,
         }
     }
 
@@ -33,31 +36,29 @@ impl GameData {
         self.players.values().collect()
     }
 
-    pub fn add_enemy(&mut self, enemy: Enemy) {
-        self.enemies.push(enemy);
-    }
-
-    pub fn get_enemies(&self) -> &Vec<Enemy> {
-        &self.enemies
-    }
-
-    pub fn add_wall(&mut self, wall: Wall) {
-        self.walls.push(wall);
-    }
-
-    pub fn get_walls(&self) -> &Vec<Wall> {
-        &self.walls
-    }
-
     pub fn get_player(&self, socket_address: &SocketAddr) -> Option<&Player> {
         self.players.get(socket_address)
     }
 
     pub fn has_match_started(&self) -> bool {
-        self.math_status
+        self.match_status
     }
 
     pub fn start_match(&mut self) {
-        self.math_status = true;
+        self.match_status = true;
+		self.field.init();
     }
+
+	pub fn do_tick(&mut self, dt: f32) {
+		self.field.do_tick(dt);
+	}
+}
+
+pub fn get_random_position(max: Vec2) -> Vec2 {
+    let mut rng = rand::thread_rng();
+
+	let x = rng.gen_range(0.0..=max.x);
+	let y = rng.gen_range(0.0..=max.y);
+
+	Vec2::new(x, y)
 }
