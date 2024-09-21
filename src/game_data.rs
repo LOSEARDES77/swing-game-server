@@ -46,7 +46,12 @@ impl GameData {
 
     pub fn start_match(&mut self) {
         self.match_status = true;
+		self.field.init();
     }
+
+	pub fn do_tick(&mut self, dt: f32) {
+		self.field.do_tick(dt);
+	}
 }
 
 pub fn get_random_position(max: Vec2) -> Vec2 {
