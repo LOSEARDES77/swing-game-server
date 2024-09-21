@@ -104,6 +104,16 @@ impl GameField {
         }
 	}
 
+	pub fn init(&mut self) {
+		self.init_coins();
+		self.init_enemies();
+	}
+
+	pub fn do_tick(&mut self, dt: f32) {
+		self.generate_coins(dt);
+		// self.generate_enemies(dt);
+	}
+
     fn check_coin_collision(&self, pos: Vec2) -> bool {
         self.coins
             .iter()
