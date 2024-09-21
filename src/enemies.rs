@@ -53,26 +53,31 @@ impl Enemy {
                 if self.pos.x + self.size.x > GAME_FIELD_SIZE[0].into() {
                     self.movement_axis.1 = false;
                 }
-            // TODO do movement
+				result = self.move_enemy(Direction::RIGHT);
             } else {
                 if self.pos.x < 0.0 {
                     self.movement_axis.1 = true;
                 }
-                // TODO do movement
+				result = self.move_enemy(Direction::LEFT);
             }
         } else {
             if self.movement_axis.1 {
                 if self.pos.x + self.size.x > GAME_FIELD_SIZE[0].into() {
                     self.movement_axis.1 = false;
                 }
-            // TODO do movement
+				result = self.move_enemy(Direction::DOWN);
             } else {
                 if self.pos.x < 0.0 {
                     self.movement_axis.1 = true;
                 }
-                // TODO do movement
+				result = self.move_enemy(Direction::UP);
             }
         }
+
+		if result {
+			self.movement_axis.1 = !self.movement_axis.1;
+			self.movement_axis.0 = !self.movement_axis.0;
+		}
     }
 
     fn move_enemy(&mut self, dir: Direction) -> bool {
